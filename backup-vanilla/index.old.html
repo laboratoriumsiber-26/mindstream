@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindStream | Sistem Informasi Manajemen Ekosistem Pembelajaran Digital</title>
+    <meta name="description"
+        content="Platform terpusat manajemen produksi konten Pusat Inovasi Pembelajaran Digital UIN Siber Syekh Nurjati Cirebon">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Firebase SDK di-pause sementara -->
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Views will be dynamically injected here by app.js -->
+
+        <!-- Loading State Default -->
+        <div class="full-screen-loader" id="global-loader">
+            <div class="spinner"></div>
+            <p>Memuat Sistem...</p>
+        </div>
+    </div>
+
+    <!-- Global Custom Modal -->
+    <div id="global-modal" class="modal-overlay hidden"
+        style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+        <div class="glass-card modal-content"
+            style="max-width: 400px; width: 90%; text-align: center; padding: 24px; border: none; transform: translateY(20px); transition: transform 0.3s ease;">
+            <div id="modal-icon-container" style="margin-bottom: 16px;">
+                <span id="modal-icon" class="material-symbols-outlined"
+                    style="font-size: 3rem; color: var(--primary);">info</span>
+            </div>
+            <h3 id="modal-title" style="margin-bottom: 8px; font-weight: 700;">Konfirmasi</h3>
+            <p id="modal-message" style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem;">Pesan modal
+                akan tampil di sini.</p>
+            <div id="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+                <button id="modal-btn-cancel" class="btn-primary"
+                    style="background: var(--bg-surface-hover); color: var(--text-main); border: none; flex: 1; display: none;">Batal</button>
+                <button id="modal-btn-confirm" class="btn-primary" style="border: none; flex: 1;">Oke</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HTML Templates (Hidden) -->
+    <template id="login-view-template">
+        <div class="login-container view-enter">
+            <div class="glass-card login-card">
+                <div class="login-header">
+                    <div class="logo-placeholder">
+                        <span class="material-symbols-outlined icon-large">school</span>
+                    </div>
+                    <h1>MindStream</h1>
+                    <p>Pusat Inovasi Pembelajaran Digital<br>UIN Siber Syekh Nurjati Cirebon</p>
+                </div>
+                <button id="btn-login" class="btn-primary w-100 mt-4">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="btn-icon">
+                    Login dengan Akun Google
+                </button>
+                <div class="login-footer">
+                    Gunakan email Google atau Workspace Anda
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="request-access-view-template">
+        <div class="login-container view-enter">
+            <div class="glass-card login-card" style="max-width: 500px;">
+                <div class="login-header">
+                    <span class="material-symbols-outlined icon-large"
+                        style="color: var(--primary); margin-bottom: 16px;">how_to_reg</span>
+                    <h2>Pendaftaran Akses Baru</h2>
+                    <p>Hai <strong id="req-name"></strong>, akun Anda belum terdaftar di MindStream. Silakan ajukan hak
+                        akses Anda.</p>
+                </div>
+                <form onsubmit="window.submitAccessRequest(event)" style="text-align: left;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Pilih Hak
+                            Akses</label>
+                        <select id="req-role" required
+                            style="width: 100%; padding: 12px; border: var(--glass-border); background: var(--bg-surface); color: var(--text-main); font-family: inherit; outline: none; border-radius: var(--radius-sm);">
+                            <option value="user">Dosen / User Biasa</option>
+                            <option value="editor">Editor Video</option>
+                            <option value="uploader">Uploader Medsos</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Instansi / Fakultas
+                            (Opsional)</label>
+                        <input type="text" id="req-instansi" placeholder="Misal: Fakultas Ilmu Tarbiyah"
+                            style="width: 100%; padding: 12px; border: var(--glass-border); background: var(--bg-surface); color: var(--text-main); font-family: inherit; outline: none; border-radius: var(--radius-sm);">
+                    </div>
+                    <button type="submit" class="btn-primary w-100">Kirim Pengajuan</button>
+                    <button type="button" class="btn-ghost w-100 mt-4" onclick="window.performLogout()">Batal &
+                        Logout</button>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <template id="pending-approval-view-template">
+        <div class="login-container view-enter">
+            <div class="glass-card login-card">
+                <div class="login-header">
+                    <span class="material-symbols-outlined icon-large"
+                        style="color: var(--accent-1); margin-bottom: 16px;">hourglass_empty</span>
+                    <h2>Menunggu Persetujuan</h2>
+                    <p>Pengajuan akun Anda sedang diproses oleh Administrator. Silakan cek kembali secara berkala.</p>
+                </div>
+                <button class="btn-ghost w-100 mt-4" onclick="window.performLogout()">Kembali (Logout)</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="dashboard-view-template">
+        <div class="dashboard-layout view-enter">
+            <!-- Sidebar -->
+            <aside class="glass-sidebar">
+                <div class="sidebar-brand">
+                    <span class="material-symbols-outlined">video_library</span>
+                    <h2>MindStream</h2>
+                </div>
+
+
+                <nav class="sidebar-nav" id="sidebar-nav">
+                    <!-- Nav items injected here based on role -->
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-profile" style="margin-bottom: 0;">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar"
+                            alt="Avatar">
+                        <div class="user-info">
+                            <h3 id="user-name">Memuat...</h3>
+                            <span id="user-role" class="badge-role">Role</span>
+                        </div>
+                        <button id="btn-logout" class="btn-icon-only" title="Logout"
+                            style="margin-left: auto; color: white; border-color: rgba(255,255,255,0.3); background: rgba(0,0,0,0.1);">
+                            <span class="material-symbols-outlined"
+                                style="font-size: 1.1rem; padding-left: 4px;">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="dashboard-main">
+                <header class="topbar glass-card">
+                    <h2 id="page-title">Dashboard Utama</h2>
+                    <div class="topbar-actions" style="display: flex; gap: 8px;">
+                        <select id="role-switcher" onchange="window.switchRole(this.value)"
+                            style="background: var(--bg-surface-hover); color: var(--text-main); border: var(--glass-border); padding: 4px 8px; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.8rem; margin-right: 8px;">
+                            <option value="superadmin">Super Admin</option>
+                            <option value="uploader">Uploader</option>
+                            <option value="editor">Editor</option>
+                            <option value="user">User Biasa</option>
+                        </select>
+                        <button id="btn-theme-toggle" class="btn-icon-only" aria-label="Toggle Theme">
+                            <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+                        </button>
+                        <button class="btn-icon-only" aria-label="Notifikasi">
+                            <span class="material-symbols-outlined">notifications</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div class="content-area" id="main-content">
+                    <!-- Dynamic Page Content -->
+                </div>
+
+                <!-- Bottom Navigation (Mobile Only) -->
+                <nav class="bottom-nav">
+                    <a href="#dashboard" class="bottom-nav-item active"
+                        onclick="document.querySelector('.nav-item[href=\\'#dashboard\\']').click(); return false;">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        <span>Beranda</span>
+                    </a>
+                    <a href="#kategori" class="bottom-nav-item"
+                        onclick="document.querySelector('.nav-item[href=\\'#kategori\\']').click(); return false;">
+                        <span class="material-symbols-outlined">category</span>
+                        <span>Kategori</span>
+                    </a>
+                    <a href="#video-pembelajaran" class="bottom-nav-item"
+                        onclick="window.openForm('video-pembelajaran'); return false;">
+                        <span class="material-symbols-outlined">video_call</span>
+                        <span>Upload</span>
+                    </a>
+                    <a href="#profil" class="bottom-nav-item"
+                        onclick="document.querySelector('.nav-item[href=\\'#profil\\']').click(); return false;">
+                        <span class="material-symbols-outlined">person</span>
+                        <span>Profil</span>
+                    </a>
+                </nav>
+
+                <!-- Bottom Sheet Overlay -->
+                <div id="bottom-sheet" class="bottom-sheet-overlay hidden">
+                    <div class="bottom-sheet-content">
+                        <div class="bottom-sheet-header">
+                            <h3 id="bs-title">Title</h3>
+                            <button class="btn-icon-only"
+                                onclick="document.getElementById('bottom-sheet').classList.add('hidden')">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div id="bs-body" class="bottom-sheet-body"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </template>
+</body>
+
+</html>
