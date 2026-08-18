@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAppContext } from '../../context/AppContext';
 
 interface VideoCardProps {
   title: string;
@@ -18,10 +19,11 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, lecturer, course, type, da
     return tmp.textContent || tmp.innerText || "";
   };
 
+  const { showToast } = useAppContext();
+
   const handlePlay = () => {
-    // Basic logic to handle play button click. 
-    // Usually it would open a modal or navigate to a video player route.
-    alert(`Membuka pemutar video untuk: ${title}`);
+    // Di masa depan bisa diarahkan ke halaman detail pemutar video
+    showToast(`Membuka pemutar video untuk: ${title}`, 'info');
   };
 
   return (

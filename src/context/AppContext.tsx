@@ -25,6 +25,8 @@ export interface AppState {
   role: string;
   appData: AppData;
   isLoading: boolean;
+  toast: { show: boolean; message: string; type: 'info' | 'success' | 'error' | 'warning' };
+  confirm: { show: boolean; message: string; onConfirm: () => void; onCancel: () => void };
 }
 
 interface AppContextType {
@@ -35,6 +37,10 @@ interface AppContextType {
   updateRow: (tableName: string, index: number, updatedRow: RowData) => void;
   addRow: (tableName: string, newRow: RowData) => void;
   deleteRow: (tableName: string, index: number) => void;
+  showToast: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
+  hideToast: () => void;
+  showConfirm: (message: string, onConfirm: () => void, onCancel?: () => void) => void;
+  hideConfirm: () => void;
 }
 
 const defaultState: AppState = {
@@ -42,7 +48,9 @@ const defaultState: AppState = {
   username: '',
   role: '',
   appData: {},
-  isLoading: true
+  isLoading: true,
+  toast: { show: false, message: '', type: 'info' },
+  confirm: { show: false, message: '', onConfirm: () => {}, onCancel: () => {} }
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -71,85 +79,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const docRef = doc(db, 'mindstream_system', 'global_data');
     
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setState(prev => ({ ...prev, appData: docSnap.data() as AppData, isLoading: false }));
-      } else {
         const initialData = {
+          'pengajuan-akun': [],
           'profil': [
               { c1: 'Nama Pengguna', c2: 'Superadmin' },
-              { c1: 'Email', c2: 'superadmin@mindstream.local' },
+              { c1: 'Email', c2: 'admin@mindstream.local' },
               { c1: 'Unit Kerja', c2: 'Pusat Inovasi Pembelajaran' }
           ],
-          'halaman': [
-              { c1: 'Beranda / Dashboard', c2: '<span style="color: var(--primary); font-weight:bold;">Aktif</span>' },
-              { c1: 'Tentang Kami', c2: '<span style="color: var(--text-muted);">Draft</span>' }
-          ],
-          'kategori': [
-              { c1: 'Video Edukasi', c2: 'Kategori untuk video pembelajaran terstruktur' },
-              { c1: 'Podcast', c2: 'Kategori untuk konten bincang-bincang santai' }
-          ],
-          'klaster-dosen': [
-              { c1: 'Dr. Ahmad Fulan' },
-              { c1: 'Siti Aminah, M.Kom' },
-              { c1: 'Prof. Budi Santoso, Ph.D' }
-          ],
-          'mata-kuliah': [
-              { c1: 'SI101', c2: 'Sistem Informasi' },
-              { c1: 'TI202', c2: 'Pemrograman Web' },
-              { c1: 'KU100', c2: 'Pendidikan Agama Islam' }
-          ],
-          'story-board': [
-              { c1: 'SB Pertemuan 1 - Konsep Web', c2: 'Dr. Ahmad Fulan', c3: 'TI202', c4: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--primary); color: var(--primary); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">folder_open</span> Lihat Drive</button>' },
-              { c1: 'SB Pengenalan Database', c2: 'Siti Aminah, M.Kom', c3: 'SI101', c4: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--primary); color: var(--primary); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">folder_open</span> Lihat Drive</button>' }
-          ],
-          'video-pembelajaran': [
-              { c1: 'Konsep Dasar Web', c2: 'Dr. Ahmad Fulan<br><small style="color: var(--text-muted);">Pemrograman Web (TI202)</small>', c3: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--glass-border); color: var(--text-main); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">preview</span> Lihat SB</button>', c4: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--accent-1); color: var(--accent-1); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">play_circle</span> V1.mp4</button>', c5: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>', c6: 'Rizky (Editor)', c7: '20-08-2026', c8: 'In Progress' },
-              { c1: 'Pengantar SQL', c2: 'Siti Aminah, M.Kom<br><small style="color: var(--text-muted);">Sistem Informasi (SI101)</small>', c3: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--glass-border); color: var(--text-main); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">preview</span> Lihat SB</button>', c4: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>', c5: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--primary); color: var(--primary); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">play_circle</span> Final.mp4</button>', c6: 'Budi (Editor)', c7: '15-08-2026', c8: 'Finalized' }
-          ],
-          'video-podcast': [
-              { c1: 'RAW Podcast 1', c2: '2026-08-10', c3: '45' },
-              { c1: 'RAW Podcast 2', c2: '2026-08-11', c3: '60' }
-          ],
-          'podcast': [
-              { c1: 'Inovasi Digital di Kampus', c2: '<span style="color: var(--text-muted); font-style: italic;">Pilih RAW...</span>', c3: 'Dr. Ahmad Fulan<br><small style="color: var(--text-muted);">Host: Uploader Kampus</small>', c4: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>', c5: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--primary); color: var(--primary); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">play_circle</span> Final.mp4</button>', c6: 'Rizky (Editor)', c7: '21-08-2026', c8: 'Finalized' },
-              { c1: 'Tantangan Riset 2026', c2: '<span style="color: var(--text-muted); font-style: italic;">Pilih RAW...</span>', c3: 'Prof. Budi Santoso<br><small style="color: var(--text-muted);">Host: Operator Podcast</small>', c4: '<button style="background: var(--bg-surface-hover); border: 1px solid var(--accent-1); color: var(--accent-1); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">play_circle</span> Draft_1.mp4</button>', c5: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>', c6: 'Budi (Editor)', c7: '25-08-2026', c8: 'Review' }
-          ],
-          'konten-medsos': [
-              { c1: 'Instagram', c2: 'Edukasi', c3: '20-08-2026' },
-              { c1: 'TikTok', c2: 'Hiburan', c3: '22-08-2026' },
-              { c1: 'YouTube Shorts', c2: 'Informasi', c3: '25-08-2026' }
-          ],
-          'rekapitulasi-laporan': [
-              { c1: 'Agustus 2026', c2: '45 Video', c3: '30 Selesai', c4: '15 Proses' },
-              { c1: 'Juli 2026', c2: '38 Video', c3: '38 Selesai', c4: '0 Proses' }
-          ],
-          'daftar-admin': [
-              { c1: 'Ahmad Admin', c2: 'admin1@kampus.ac.id', c3: 'Admin' }
-          ],
-          'daftar-uploader': [
-              { c1: 'Uploader Kampus', c2: 'uploader@kampus.ac.id', c3: 'Uploader' }
-          ],
-          'daftar-editor': [
-              { c1: 'Rizki Faturohman', c2: 'Senior Editor', c3: 'Tersedia' },
-              { c1: 'Muhammad Adam Habibie', c2: 'Junior Editor', c3: 'Tersedia' },
-              { c1: 'Muhammad Lazuardi Ramadhani', c2: 'Junior Editor', c3: 'Tersedia' }
-          ],
-          'daftar-user': [
-              { c1: 'Mahasiswa A', c2: 'mhs.a@kampus.ac.id', c3: 'Fakultas Tarbiyah' },
-              { c1: 'Dosen B', c2: 'dosen.b@kampus.ac.id', c3: 'Fakultas Syariah' }
-          ],
-          'daftar-akun': [
-            { c1: "Siti Hamidah", c2: "Mentor Fotografer/Videografer", c3: "6", c4: "FDKI", c5: "Komunikasi dan Penyiaran Islam", c6: "2384110102", c7: "6281320995472", c8: "-", c9: "Admin" },
-            { c1: "Auliya Rahmi", c2: "Mentor Fotografer/Videografer", c3: "6", c4: "FITK", c5: "Pendidikan Bahasa Arab", c6: "2381020029", c7: "62895404577828", c8: "-", c9: "Admin" },
-            { c1: "M. Surya Fadlilah Ramadhan", c2: "Mentor Desain Grafis", c3: "6", c4: "FITK", c5: "Tadris Bahasa Inggris", c6: "2381030113", c7: "6282185090756", c8: "suryafadil218@gmail.com", c9: "Admin" },
-            { c1: "Rizki Faturohman", c2: "Editor Video", c3: "6", c4: "FUA", c5: "Bahasa dan Sastra Arab", c6: "2385150043", c7: "6281394301290", c8: "rizkifaturohman@mail.uinssc.ac.id", c9: "Editor" },
-            { c1: "Muhammad Adam Habibie", c2: "Editor Video", c3: "4", c4: "FUA", c5: "Bahasa dan Sastra Arab", c6: "2485150040", c7: "6289526573241", c8: "albirunihabibie1422@gmail.com", c9: "Editor" },
-            { c1: "Muhammad Lazuardi Ramadhani", c2: "Editor Video", c3: "2", c4: "FASYA", c5: "Ekonomi Syariah", c6: "2530212139", c7: "6289699062022", c8: "Lazuardiramadhani2006@gmail.com", c9: "Editor" }
-          ]
+          'halaman': [],
+          'kategori': [],
+          'klaster-dosen': [],
+          'mata-kuliah': [],
+          'story-board': [],
+          'video-pembelajaran': [],
+          'video-podcast': [],
+          'podcast': [],
+          'konten-medsos': [],
+          'rekapitulasi-laporan': [],
+          'daftar-admin': [],
+          'daftar-uploader': [],
+          'daftar-editor': [],
+          'daftar-user': [],
+          'daftar-akun': []
         };
-        setDoc(docRef, initialData);
-        setState(prev => ({ ...prev, appData: initialData, isLoading: false }));
-      }
+        
+        // Force wipe database for user request
+        if (localStorage.getItem('db_wiped_v2') !== 'true') {
+          setDoc(docRef, initialData);
+          localStorage.setItem('db_wiped_v2', 'true');
+        }
+
+        if (docSnap.exists()) {
+          setState(prev => ({ ...prev, appData: docSnap.data() as AppData, isLoading: false }));
+        } else {
+          setDoc(docRef, initialData);
+          setState(prev => ({ ...prev, appData: initialData, isLoading: false }));
+        }
     });
 
     return () => unsubscribe();
@@ -179,7 +144,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const assignEditor = () => {
-    const editors = state.appData['daftar-editor'] || [];
+    const allAccounts = state.appData['daftar-akun'] || [];
+    const editors = allAccounts.filter(acc => acc.c9 === 'Editor' || acc.c9?.toLowerCase().includes('editor'));
+    
     if (editors.length === 0) return 'Belum ada Editor';
     
     const videos = state.appData['video-pembelajaran'] || [];
@@ -281,9 +248,114 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setDoc(docRef, { [tableName]: table }, { merge: true });
   };
 
+  const showToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+    setState(prev => ({ ...prev, toast: { show: true, message, type } }));
+    setTimeout(() => {
+      hideToast();
+    }, 4000); // auto hide after 4 seconds
+  };
+
+  const hideToast = () => {
+    setState(prev => ({ ...prev, toast: { ...prev.toast, show: false } }));
+  };
+
+  const showConfirm = (message: string, onConfirm: () => void, onCancel?: () => void) => {
+    setState(prev => ({
+      ...prev,
+      confirm: {
+        show: true,
+        message,
+        onConfirm: () => {
+          onConfirm();
+          hideConfirm();
+        },
+        onCancel: () => {
+          if (onCancel) onCancel();
+          hideConfirm();
+        }
+      }
+    }));
+  };
+
+  const hideConfirm = () => {
+    setState(prev => ({ ...prev, confirm: { ...prev.confirm, show: false } }));
+  };
+
   return (
-    <AppContext.Provider value={{ state, login, logout, saveData, updateRow, addRow, deleteRow }}>
+    <AppContext.Provider value={{ state, login, logout, saveData, updateRow, addRow, deleteRow, showToast, hideToast, showConfirm, hideConfirm }}>
       {!state.isLoading ? children : <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',color:'white'}}>Menghubungkan ke Firebase...</div>}
+      
+      {/* Global Toast Notification */}
+      {state.toast.show && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: state.toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 
+                      state.toast.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : 
+                      state.toast.type === 'warning' ? 'rgba(245, 158, 11, 0.95)' : 
+                      'rgba(59, 130, 246, 0.95)',
+          color: 'white',
+          padding: '16px 24px',
+          borderRadius: 'var(--radius-md)',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          animation: 'slideUp 0.3s ease-out',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.1)'
+        }}>
+          <span className="material-symbols-outlined">
+            {state.toast.type === 'error' ? 'error' : 
+             state.toast.type === 'success' ? 'check_circle' : 
+             state.toast.type === 'warning' ? 'warning' : 'info'}
+          </span>
+          <div style={{ whiteSpace: 'pre-line', lineHeight: 1.5 }}>
+            {state.toast.message}
+          </div>
+          <button 
+            onClick={hideToast}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              padding: '4px',
+              marginLeft: '8px',
+              opacity: 0.8
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>close</span>
+          </button>
+        </div>
+      )}
+
+      {/* Global Confirm Notification */}
+      {state.confirm.show && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 10000,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="glass-card" style={{ padding: '24px', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '90%', textAlign: 'center', animation: 'scaleUp 0.2s ease-out' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--primary)', marginBottom: '16px' }}>help</span>
+            <h3 style={{ marginBottom: '16px', color: 'var(--text-main)' }}>Konfirmasi Tindakan</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.5 }}>{state.confirm.message}</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn-ghost" onClick={state.confirm.onCancel} style={{ padding: '8px 24px', flex: 1 }}>Batal</button>
+              <button className="btn-primary" onClick={state.confirm.onConfirm} style={{ padding: '8px 24px', flex: 1, background: '#ef4444' }}>Ya, Lanjutkan</button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppContext.Provider>
   );
 };

@@ -20,11 +20,8 @@ const menuConfig = [
   { id: 'konten-medsos', icon: 'share', label: 'Konten Medsos', roles: ['admin', 'uploader', 'user'] },
 
   { type: 'group', label: 'Manajemen Hak Akses', roles: ['admin'] },
-  { id: 'daftar-akun', icon: 'badge', label: 'Daftar Akun', roles: ['admin'] },
-  { id: 'daftar-admin', icon: 'admin_panel_settings', label: 'Admin', roles: ['admin'] },
-  { id: 'daftar-uploader', icon: 'upload_file', label: 'Uploader', roles: ['admin'] },
-  { id: 'daftar-editor', icon: 'movie_edit', label: 'Editor', roles: ['admin'] },
-  { id: 'daftar-user', icon: 'group', label: 'User', roles: ['admin'] },
+  { id: 'pengajuan-akun', icon: 'how_to_reg', label: 'Persetujuan Akun', roles: ['admin'] },
+  { id: 'daftar-akun', icon: 'badge', label: 'Daftar Semua Akun', roles: ['admin'] },
 
   { type: 'group', label: 'Manajemen Website (CMS)', roles: ['admin'] },
   { id: 'cms-slider', icon: 'view_carousel', label: 'CMS Hero Slider', roles: ['admin'] },
@@ -72,7 +69,7 @@ const Sidebar = () => {
 
           if (item.type === 'group') {
             return (
-              <div key={idx} style={{ marginTop: '24px', marginBottom: '8px', paddingLeft: '12px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', fontWeight: 600 }}>
+              <div key={idx} style={{ marginTop: '16px', marginBottom: '4px', paddingLeft: '8px', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', fontWeight: 600 }}>
                 {item.label}
               </div>
             );

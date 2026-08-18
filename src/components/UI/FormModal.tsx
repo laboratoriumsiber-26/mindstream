@@ -60,57 +60,68 @@ const FormModal: React.FC<FormModalProps> = ({ pageId, initialData, onClose, onS
   const renderGenericInputs = () => {
     return config.heads.map((head, idx) => {
       const key = `c${idx + 1}`;
-      
-      // Khusus untuk Master Data Akun
-      if (['daftar-admin', 'daftar-uploader', 'daftar-editor', 'daftar-user'].includes(pageId) && idx === 0) {
-        return (
-          <div key={idx} style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>{head}</label>
-            <select required value={formData[key] || ''} onChange={e => handleChange(key, e.target.value)} style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
-              <option value="">Pilih dari Daftar Akun...</option>
-              {state.appData['daftar-akun']?.map((a: any) => (
-                <option key={a.c1} value={a.c1}>{a.c1} ({a.c2})</option>
-              ))}
-            </select>
-          </div>
-        );
-      }
-
-      if (pageId === 'daftar-editor' && idx === 1) {
-        return (
-          <div key={idx} style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>{head}</label>
-            <select required value={formData[key] || ''} onChange={e => handleChange(key, e.target.value)} style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
-              <option value="Senior Editor">Senior Editor</option>
-              <option value="Junior Editor">Junior Editor</option>
-            </select>
-          </div>
-        );
-      }
 
       const isTextArea = head.toLowerCase().includes('isi konten') || head.toLowerCase().includes('deskripsi');
+      const isDosen = (head.toLowerCase() === 'dosen' || head.toLowerCase() === 'nama dosen') && pageId !== 'klaster-dosen';
+      const isStoryBoard = (head.toLowerCase() === 'story board' || head.toLowerCase() === 'judul story board') && pageId !== 'story-board';
+      const isMataKuliah = head.toLowerCase() === 'kode mk' && pageId !== 'mata-kuliah';
+
+      let inputElement;
+
+      if (isDosen) {
+        inputElement = (
+          <select required value={formData[key] || ''} onChange={e => handleChange(key, e.target.value)} style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
+            <option value="">Pilih Dosen...</option>
+            {state.appData['klaster-dosen']?.map((d: any) => (
+              <option key={d.c1} value={d.c1}>{d.c1}</option>
+            ))}
+          </select>
+        );
+      } else if (isStoryBoard) {
+        inputElement = (
+          <select required value={formData[key] || ''} onChange={e => handleChange(key, e.target.value)} style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
+            <option value="">Pilih Story Board...</option>
+            {state.appData['story-board']?.map((sb: any) => (
+              <option key={sb.c1} value={sb.c1}>{sb.c1}</option>
+            ))}
+          </select>
+        );
+      } else if (isMataKuliah) {
+        inputElement = (
+          <select required value={formData[key] || ''} onChange={e => handleChange(key, e.target.value)} style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}>
+            <option value="">Pilih Mata Kuliah...</option>
+            {state.appData['mata-kuliah']?.map((mk: any) => (
+              <option key={mk.c1} value={mk.c1}>{mk.c1} - {mk.c2}</option>
+            ))}
+          </select>
+        );
+      } else if (isTextArea) {
+        inputElement = (
+          <textarea 
+            required 
+            placeholder={`Masukkan ${head}...`} 
+            value={formData[key] || ''} 
+            onChange={e => handleChange(key, e.target.value)}
+            style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)', minHeight: '150px', fontFamily: 'inherit' }}
+          />
+        );
+      } else {
+        inputElement = (
+          <input 
+            type="text" 
+            required={head.toLowerCase() !== 'tautan / file'} 
+            placeholder={`Masukkan ${head}...`} 
+            value={formData[key] || ''} 
+            onChange={e => handleChange(key, e.target.value)}
+            style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}
+          />
+        );
+      }
 
       return (
         <div key={idx} style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>{head}</label>
-          {isTextArea ? (
-            <textarea 
-              required 
-              placeholder={`Masukkan ${head}...`} 
-              value={formData[key] || ''} 
-              onChange={e => handleChange(key, e.target.value)}
-              style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)', minHeight: '150px', fontFamily: 'inherit' }}
-            />
-          ) : (
-            <input 
-              type="text" 
-              required 
-              placeholder={`Masukkan ${head}...`} 
-              value={formData[key] || ''} 
-              onChange={e => handleChange(key, e.target.value)}
-              style={{ width: '100%', padding: '12px', border: 'var(--glass-border)', background: 'var(--bg-base)', color: 'var(--text-main)', borderRadius: 'var(--radius-sm)' }}
-            />
-          )}
+          {inputElement}
         </div>
       );
     });

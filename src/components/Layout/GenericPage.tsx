@@ -9,7 +9,7 @@ interface GenericPageProps {
 }
 
 const GenericPage: React.FC<GenericPageProps> = ({ pageId }) => {
-  const { state, addRow, updateRow, deleteRow } = useAppContext();
+  const { state, addRow, updateRow, deleteRow, showToast, showConfirm } = useAppContext();
   const config = tableConfigs[pageId];
   const pageData = pageDataMap[pageId];
   
@@ -34,16 +34,19 @@ const GenericPage: React.FC<GenericPageProps> = ({ pageId }) => {
   };
 
   const handleDelete = (index: number) => {
-    if (confirm('Yakin ingin menghapus data ini?')) {
+    showConfirm('Yakin ingin menghapus data ini?', () => {
       deleteRow(pageId, index);
-    }
+      showToast('Data berhasil dihapus', 'success');
+    });
   };
 
   const handleSubmit = (formData: RowData) => {
     if (editingIndex !== null) {
       updateRow(pageId, editingIndex, formData);
+      showToast('Data berhasil diperbarui', 'success');
     } else {
       addRow(pageId, formData);
+      showToast('Data baru berhasil ditambahkan', 'success');
     }
     setIsModalOpen(false);
   };

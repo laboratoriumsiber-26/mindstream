@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 const Leaderboard = () => {
   const { state } = useAppContext();
   
-  const editors = state.appData['daftar-editor'] || [];
+  const allAccounts = state.appData['daftar-akun'] || [];
+  const editors = allAccounts.filter(acc => acc.c9 === 'Editor' || acc.c9?.toLowerCase().includes('editor'));
   const videos = state.appData['video-pembelajaran'] || [];
   const podcasts = state.appData['podcast'] || [];
 
@@ -28,7 +29,7 @@ const Leaderboard = () => {
 
       return {
           name: editorName,
-          level: e.c2 ?? 'Editor',
+          level: e.c9 ?? 'Editor', // Use role column for level
           totalDone: totalDone,
           totalTasks: totalTasks,
           score: score,

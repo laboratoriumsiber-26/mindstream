@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { RowData } from '../../context/AppContext';
+import { RowData, useAppContext } from '../../context/AppContext';
 
 interface TableProps {
   pageId: string;
@@ -11,6 +11,7 @@ interface TableProps {
 }
 
 const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete }) => {
+  const { showToast } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<Record<number, string>>({});
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
@@ -128,7 +129,7 @@ const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete })
                   {canEdit && (
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       {item.auditLog && (
-                        <button type="button" className="btn-primary" title="Lihat Riwayat Audit" style={{ padding: '6px 10px', fontSize: '0.8rem', borderRadius: 'var(--radius-sm)', marginRight: '4px', background: '#3b82f6', border: 'none' }} onClick={() => alert(`RIWAYAT PERUBAHAN:\n\n${item.auditLog?.split('|').join('\n')}`)}>
+                        <button type="button" className="btn-primary" title="Lihat Riwayat Audit" style={{ padding: '6px 10px', fontSize: '0.8rem', borderRadius: 'var(--radius-sm)', marginRight: '4px', background: '#3b82f6', border: 'none' }} onClick={() => showToast(`RIWAYAT PERUBAHAN:\n\n${item.auditLog?.split('|').join('\n')}`, 'info')}>
                           <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle' }}>history</span>
                         </button>
                       )}

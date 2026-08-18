@@ -1,10 +1,7 @@
 export const tableConfigs: Record<string, { heads: string[] }> = {
+  'pengajuan-akun': { heads: ['Nama Lengkap', 'Email', 'Unit Kerja / Institusi', 'Role yang Diberikan', 'Status Pengajuan'] },
   'daftar-akun': { heads: ['Nama Lengkap', 'Username/NIM/NIP', 'Jenis Kelamin', 'No WhatsApp', 'Email', 'Unit Kerja / Fakultas', 'Jabatan / Program Studi', 'Tanggal Lahir', 'Role'] },
-  'daftar-admin': { heads: ['Nama Admin', 'Username', 'Status'] },
-  'daftar-uploader': { heads: ['Nama Uploader', 'Username', 'Status'] },
-  'daftar-editor': { heads: ['Nama Editor', 'Spesialisasi', 'Status'] },
-  'daftar-user': { heads: ['Nama User', 'Email', 'Departemen'] },
-  'klaster-dosen': { heads: ['Nama Dosen', 'Fakultas / Program Studi'] },
+  'klaster-dosen': { heads: ['Nama Dosen', 'Nomor WhatsApp'] },
   'mata-kuliah': { heads: ['Kode MK', 'Nama Mata Kuliah'] },
   'video-pembelajaran': { heads: ['Judul Video Pembelajaran', 'Dosen', 'Story Board', 'Revisi', 'Hasil', 'Editor', 'Deadline', 'Status Pekerjaan'] },
   'podcast': { heads: ['Judul Video Podcast', 'RAW Video Podcast', 'Narasumber & Host', 'Revisi', 'Hasil', 'Editor', 'Deadline', 'Status Pekerjaan'] },
@@ -17,10 +14,8 @@ export const tableConfigs: Record<string, { heads: string[] }> = {
 
 export const pageDataMap: Record<string, { label: string }> = {
   'dashboard': { label: 'Dashboard' },
-  'daftar-admin': { label: 'Daftar Admin' },
-  'daftar-uploader': { label: 'Daftar Uploader' },
-  'daftar-editor': { label: 'Daftar Editor' },
-  'daftar-user': { label: 'Daftar User' },
+  'pengajuan-akun': { label: 'Persetujuan Akun' },
+  'daftar-akun': { label: 'Daftar Semua Akun' },
   'klaster-dosen': { label: 'Klaster Dosen' },
   'mata-kuliah': { label: 'Mata Kuliah' },
   'video-pembelajaran': { label: 'Video Pembelajaran' },
