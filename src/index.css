@@ -702,10 +702,16 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.public-layout-wrapper {
+    padding-top: 73px; /* Space for fixed header */
 }
 
 [data-theme="dark"] .public-header {

@@ -11,7 +11,7 @@ interface TableProps {
 }
 
 const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete }) => {
-  const { showToast } = useAppContext();
+  const { state, showToast } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<Record<number, string>>({});
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
@@ -24,7 +24,13 @@ const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete })
     }, 600);
   };
 
-  const filterCols = ['status pekerjaan', 'status', 'editor', 'dosen', 'peran'];
+  const filterCols = [
+    'status pekerjaan', 'status', 'editor', 'dosen', 'nama dosen', 'peran', 'kategori', 'posisi', 
+    'unit kerja / institusi', 'role yang diberikan', 'status pengajuan', 
+    'jenis kelamin', 'unit kerja / fakultas', 'role', 'menu publik', 'target menu publik',
+    'kode mk', 'penulis', 'induk menu', 'kategori artikel', 'status tayang', 'headline',
+    'narasumber & host', 'tanggal', 'jabatan / program studi'
+  ];
 
   // Extract unique values for dynamic filters
   const dynamicFilters = useMemo(() => {
@@ -33,10 +39,18 @@ const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete })
       const hl = h.toLowerCase();
       if (filterCols.includes(hl)) {
         let uniqueValues: string[] = [];
-        if (hl === 'status pekerjaan' || hl === 'status') {
-          uniqueValues = ['To Do', 'In Progress', 'Review', 'Revision', 'Retake', 'Finalized'];
-        } else if (hl === 'peran') {
+        if (hl === 'peran') {
           uniqueValues = ['Admin', 'Uploader', 'Editor', 'User'];
+        } else if (hl === 'status pekerjaan') {
+          uniqueValues = ['To Do', 'In Progress', 'Review', 'Revision', 'Retake', 'Finalized'];
+        } else if (hl === 'editor') {
+          const allEditors = state.appData['daftar-akun']?.filter((a: any) => a.c9 === 'Editor' || a.c9 === 'Admin').map((a: any) => a.c1) || [];
+          uniqueValues = Array.from(new Set(allEditors)) as string[];
+        } else if (hl === 'dosen') {
+          const allDosen = state.appData['klaster-dosen']?.map((d: any) => d.c1) || [];
+          uniqueValues = Array.from(new Set(allDosen)) as string[];
+        } else if (hl === 'status tayang') {
+          uniqueValues = ['Draft', 'Published'];
         } else {
           // Fallback to data driven
           const vals = new Set<string>();
@@ -45,48 +59,41 @@ const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete })
             val = val.replace(/<[^>]*>?/gm, '').trim();
             if (val && val !== 'Belum ada' && val !== '-') vals.add(val);
           });
-          uniqueValues = Array.from(vals);
+          uniqueValues = Array.from(vals).sort();
         }
         if (uniqueValues.length > 0) f[idx] = uniqueValues;
       }
     });
     return f;
-  }, [data, heads]);
+  }, [data, heads, state.appData]);
 
   const filteredData = useMemo(() => {
     return data.filter(item => {
       // 1. Check dropdown filters
       let rowMatches = true;
       for (const [colIdx, filterVal] of Object.entries(filters)) {
-        if (filterVal) {
-          const val = (item[`c${parseInt(colIdx) + 1}`] || '').replace(/<[^>]*>?/gm, '').toLowerCase();
-          if (!val.includes(filterVal)) {
-            rowMatches = false;
-            break;
-          }
+        if (!filterVal) continue;
+        const cellVal = (item[`c${parseInt(colIdx) + 1}`] || '').toLowerCase();
+        if (!cellVal.includes(filterVal)) {
+          rowMatches = false;
+          break;
         }
       }
-
-      // 2. Check global text search
+      
+      // 2. Check search
       if (rowMatches && searchTerm) {
-        let searchMatch = false;
-        for (let i = 1; i <= heads.length; i++) {
-          const val = (item[`c${i}`] || '').replace(/<[^>]*>?/gm, '').toLowerCase();
-          if (val.includes(searchTerm.toLowerCase())) {
-            searchMatch = true;
-            break;
-          }
-        }
-        if (!searchMatch) rowMatches = false;
+        const searchLower = searchTerm.toLowerCase();
+        const rowText = Object.values(item).join(' ').toLowerCase();
+        if (!rowText.includes(searchLower)) rowMatches = false;
       }
-
+      
       return rowMatches;
     });
-  }, [data, searchTerm, filters, heads.length]);
+  }, [data, filters, searchTerm]);
 
   return (
     <>
-      <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {Object.entries(dynamicFilters).map(([idx, options]) => (
           <select 
             key={idx}
@@ -123,9 +130,48 @@ const Table: React.FC<TableProps> = ({ data, heads, canEdit, onEdit, onDelete })
               const originalIndex = data.findIndex(d => d === item);
               return (
                 <tr key={originalIndex}>
-                  {heads.map((_, colIdx) => (
-                    <td key={colIdx} dangerouslySetInnerHTML={{ __html: item[`c${colIdx + 1}`] || '-' }} />
-                  ))}
+                  {heads.map((headName, colIdx) => {
+                    const rawVal = item[`c${colIdx + 1}`] || '-';
+                    const isUrl = rawVal.startsWith('http://') || rawVal.startsWith('https://');
+                    const isLongText = rawVal.length > 50 && !isUrl;
+                    
+                    let content;
+                    
+                    const isStatus = headName.toLowerCase().includes('status');
+
+                    if (isStatus) {
+                      let bg = 'var(--bg-surface)';
+                      let color = 'var(--text-main)';
+                      if (rawVal === 'To Do') { bg = '#475569'; color = 'white'; }
+                      else if (rawVal === 'In Progress') { bg = '#3b82f6'; color = 'white'; }
+                      else if (rawVal === 'Review') { bg = '#f59e0b'; color = 'white'; }
+                      else if (rawVal === 'Revision') { bg = '#ef4444'; color = 'white'; }
+                      else if (rawVal === 'Retake') { bg = '#dc2626'; color = 'white'; }
+                      else if (rawVal === 'Finalized' || rawVal === 'Published' || rawVal === 'Active') { bg = '#10b981'; color = 'white'; }
+                      else if (rawVal === 'Draft' || rawVal === 'Inactive') { bg = '#ef4444'; color = 'white'; }
+                      
+                      content = <span style={{ background: bg, color, padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 500 }}>{rawVal}</span>;
+                    } else if (rawVal.startsWith('[FILE]')) {
+                      content = (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>attach_file</span>
+                          {rawVal.replace('[FILE] ', '')}
+                        </span>
+                      );
+                    } else if (isUrl) {
+                      content = (
+                        <a href={rawVal} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--primary)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 500 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>link</span> Buka Tautan
+                        </a>
+                      );
+                    } else if (isLongText) {
+                      content = <div style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} dangerouslySetInnerHTML={{ __html: rawVal }} title={rawVal.replace(/<[^>]*>?/gm, '')} />;
+                    } else {
+                      content = <div dangerouslySetInnerHTML={{ __html: rawVal }} />;
+                    }
+
+                    return <td key={colIdx}>{content}</td>;
+                  })}
                   {canEdit && (
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       {item.auditLog && (

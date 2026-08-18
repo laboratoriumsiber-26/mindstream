@@ -2,21 +2,22 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 
 const menuConfig = [
-  { id: 'dashboard', icon: 'dashboard', label: 'Dashboard', group: 'Utama', roles: ['admin', 'uploader', 'editor', 'user'] },
+  { id: 'dashboard', icon: 'admin_panel_settings', label: 'Beranda Panel', group: 'Utama', roles: ['admin', 'uploader', 'editor', 'user'] },
   
   { type: 'group', label: 'Manajemen Konten', roles: ['admin', 'uploader'] },
   { id: 'profil', icon: 'person', label: 'Profil Pengguna', roles: ['admin', 'uploader', 'editor', 'user'] },
   { id: 'leaderboard', icon: 'emoji_events', label: 'Leaderboard Editor', roles: ['admin', 'uploader', 'editor', 'user'] },
 
-  { type: 'group', label: 'Master Data', roles: ['admin', 'uploader', 'user'] },
+  { type: 'group', label: 'Uploader / Master Data', roles: ['admin', 'uploader', 'user'] },
   { id: 'story-board', icon: 'auto_stories', label: 'Story Board', roles: ['admin', 'uploader', 'user'] },
-  { id: 'video-podcast', icon: 'video_file', label: 'RAW Video Podcast', roles: ['admin', 'uploader', 'user'] },
+  { id: 'raw-video', icon: 'movie', label: 'RAW Video Pembelajaran', roles: ['admin', 'uploader', 'user'] },
+  { id: 'raw-podcast', icon: 'mic', label: 'RAW Podcast', roles: ['admin', 'uploader', 'user'] },
   { id: 'klaster-dosen', icon: 'school', label: 'Klaster Dosen', roles: ['admin', 'uploader', 'user'] },
   { id: 'mata-kuliah', icon: 'menu_book', label: 'Mata Kuliah', roles: ['admin', 'uploader', 'user'] },
 
-  { type: 'group', label: 'Manajemen Video', roles: ['admin', 'uploader', 'editor', 'user'] },
-  { id: 'video-pembelajaran', icon: 'movie', label: 'Video Pembelajaran', roles: ['admin', 'uploader', 'editor', 'user'] },
-  { id: 'podcast', icon: 'mic', label: 'Podcast', roles: ['admin', 'uploader', 'editor', 'user'] },
+  { type: 'group', label: 'Ruang Editor', roles: ['admin', 'uploader', 'editor', 'user'] },
+  { id: 'editor-video', icon: 'movie_edit', label: 'Editor Video Pembelajaran', roles: ['admin', 'uploader', 'editor', 'user'] },
+  { id: 'editor-podcast', icon: 'mic_external_on', label: 'Editor Podcast', roles: ['admin', 'uploader', 'editor', 'user'] },
   { id: 'konten-medsos', icon: 'share', label: 'Konten Medsos', roles: ['admin', 'uploader', 'user'] },
 
   { type: 'group', label: 'Manajemen Hak Akses', roles: ['admin'] },
@@ -27,6 +28,7 @@ const menuConfig = [
   { id: 'cms-slider', icon: 'view_carousel', label: 'CMS Hero Slider', roles: ['admin'] },
   { id: 'cms-layanan', icon: 'design_services', label: 'CMS Layanan', roles: ['admin'] },
   { id: 'cms-artikel', icon: 'article', label: 'CMS Artikel & Berita', roles: ['admin'] },
+  { id: 'cms-menu', icon: 'menu', label: 'CMS Menu Navigasi', roles: ['admin'] },
 
   { type: 'group', label: 'Pelaporan & Analitik', roles: ['admin'] },
   { id: 'pelaporan', icon: 'assessment', label: 'Rekapitulasi Laporan', roles: ['admin'] }

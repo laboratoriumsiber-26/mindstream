@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { db } from '../utils/firebase';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+
+
 // Define the shape of our row data (up to 10 generic columns)
 export interface RowData {
   c1?: string;
@@ -76,11 +76,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [state.isLoggedIn, state.username, state.role]);
 
   useEffect(() => {
-    const docRef = doc(db, 'mindstream_system', 'global_data');
-    
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-        const initialData = {
-          'pengajuan-akun': [],
+    const initialData = {
+      'pengajuan-akun': [],
           'profil': [
               { c1: 'Nama Pengguna', c2: 'Superadmin' },
               { c1: 'Email', c2: 'admin@mindstream.local' },
@@ -88,9 +85,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           ],
           'halaman': [],
           'kategori': [],
-          'klaster-dosen': [],
-          'mata-kuliah': [],
-          'story-board': [],
+
           'video-pembelajaran': [],
           'video-podcast': [],
           'podcast': [],
@@ -100,24 +95,72 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           'daftar-uploader': [],
           'daftar-editor': [],
           'daftar-user': [],
-          'daftar-akun': []
+          'daftar-akun': [],
+          'klaster-dosen': [
+            { c1: 'Prof. Dr. H. Ilham Fathoni, M.Ag', c2: '081234567890' },
+            { c1: 'Dr. Hj. Siti Maryam, M.Pd.I', c2: '081987654321' },
+            { c1: 'Ahmad Muzakki, M.Kom', c2: '081223344556' }
+          ],
+          'mata-kuliah': [
+            { c1: 'MK-101', c2: 'Pengantar Ilmu Komputer' },
+            { c1: 'MK-202', c2: 'Desain Instruksional Digital' },
+            { c1: 'MK-303', c2: 'Filsafat Pendidikan Islam' }
+          ],
+          'story-board': [
+            { c1: 'SB-001 - Evolusi Komputer', c2: 'Ahmad Muzakki, M.Kom', c3: 'MK-101', c4: 'Draft Storyboard_v1.pdf' },
+            { c1: 'SB-002 - Sejarah Pendidikan Islam', c2: 'Prof. Dr. H. Ilham Fathoni, M.Ag', c3: 'MK-303', c4: 'Storyboard_Filsafat_Final.pdf' }
+          ],
+          'cms-slider': [
+            { c1: 'Transformasi Pembelajaran Digital', c2: 'Pusat Inovasi Pembelajaran Digital (PIPD) UIN Siber Syekh Nurjati Cirebon menghadirkan pengalaman belajar interaktif kelas dunia.', c3: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80', c4: 'Active' },
+            { c1: 'Masa Depan Pendidikan', c2: 'Mengeksplorasi teknologi Immersive Learning dan Virtual Reality untuk pendidikan Islam yang tak terbatas ruang.', c3: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=1920&q=80', c4: 'Active' },
+            { c1: 'Open Islamic Educational Resources', c2: 'Menyediakan akses terbuka bagi jutaan pencari ilmu ke berbagai literatur, modul, dan video edukasi unggulan.', c3: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1920&q=80', c4: 'Active' }
+          ],
+          'cms-layanan': [
+            { c1: 'Pengembangan Konten Pembelajaran Digital', c2: 'Kami memfasilitasi produksi video pembelajaran interaktif, animasi edukasi, dan materi ajar multimedia interaktif dengan standar penyiaran profesional. Solusi end-to-end kami mencakup pra-produksi, syuting dengan kualitas broadcast, hingga pasca-produksi menggunakan teknologi motion graphics.', c3: 'smart_display', c4: 'Active' },
+            { c1: 'Pelatihan Teknologi Pendidikan', c2: 'Menyelenggarakan workshop dan sertifikasi bagi dosen serta tenaga kependidikan dalam penguasaan perangkat lunak LMS dan desain instruksional modern. Kami menghadirkan pakar-pakar teknologi pendidikan terkemuka untuk memastikan transfer knowledge yang optimal.', c3: 'school', c4: 'Active' },
+            { c1: 'Podcast Inovasi', c2: 'Studio podcast terdedikasi untuk membedah isu-isu kontemporer dalam dunia pendidikan, sains, dan kajian Islam bersama para pakar. Fasilitas ini didukung dengan peralatan rekam audio visual berstandar profesional untuk menghasilkan output siaran yang jernih dan berkualitas tinggi.', c3: 'mic_external_on', c4: 'Active' },
+            { c1: 'OIER (Open Islamic Educational Resources)', c2: 'Membangun repositori raksasa berlisensi terbuka yang berisi literatur, modul, jurnal, dan aset digital untuk pendidikan Islam secara global. Kami berkomitmen untuk membuka akses seluas-luasnya terhadap sumber daya pengetahuan Islam yang otoritatif dan kredibel.', c3: 'menu_book', c4: 'Active' },
+            { c1: 'Virtual Reality & Immersive Learning', c2: 'Mengeksplorasi penggunaan teknologi VR/AR untuk simulasi praktikum, tur sejarah peradaban Islam, dan lingkungan belajar tanpa batas ruang. Teknologi imersif kami dirancang khusus untuk meningkatkan engagement dan retensi pemahaman mahasiswa secara signifikan.', c3: 'view_in_ar', c4: 'Active' }
+          ],
+          'cms-menu': [
+            { c1: 'Home', c2: '/', c3: 'Header Utama (Tautan Biasa)', c4: 'Active' },
+            { c1: 'Tentang', c2: '/tentang', c3: 'Header Utama (Tautan Biasa)', c4: 'Active' },
+            { c1: 'Layanan Kami', c2: '#', c3: 'Header Utama (Dropdown Layanan)', c4: 'Active' },
+            { c1: 'Titik Temu', c2: '/titik-temu', c3: 'Header Utama (Tautan Biasa)', c4: 'Active' },
+            { c1: 'Tim PIPD', c2: '/tim-pipd', c3: 'Header Utama (Tautan Biasa)', c4: 'Active' }
+          ],
+          'cms-artikel': [
+            { 
+              c1: 'Peluncuran Platform MindStream Edu', 
+              c2: 'Berita', 
+              c3: 'Ya', 
+              c4: 'Published',
+              c5: '124',
+              c6: '2026-08-18',
+              c7: 'HOT NEWS',
+              c8: 'Pusat Inovasi Pembelajaran Digital (PIPD) UIN Siber secara resmi meluncurkan MindStream Edu sebagai ekosistem...',
+              c9: '<p>Pusat Inovasi Pembelajaran Digital (PIPD) UIN Siber secara resmi meluncurkan MindStream Edu sebagai ekosistem pembelajaran digital terkini.</p><p>Platform ini memfasilitasi integrasi video interaktif, podcast, dan resource OIER untuk mahasiswa.</p>',
+              c10: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop',
+              c11: 'Ilustrasi Platform Digital',
+              c12: 'MindStream, PIPD, UIN Siber',
+              c13: 'Dr. Ahmad Fauzi'
+            }
+          ]
         };
         
-        // Force wipe database for user request
-        if (localStorage.getItem('db_wiped_v2') !== 'true') {
-          setDoc(docRef, initialData);
-          localStorage.setItem('db_wiped_v2', 'true');
-        }
-
-        if (docSnap.exists()) {
-          setState(prev => ({ ...prev, appData: docSnap.data() as AppData, isLoading: false }));
-        } else {
-          setDoc(docRef, initialData);
-          setState(prev => ({ ...prev, appData: initialData, isLoading: false }));
-        }
-    });
-
-    return () => unsubscribe();
+    const storedData = localStorage.getItem('mindstream_appData');
+    if (storedData) {
+      try {
+        const parsed = JSON.parse(storedData);
+        setState(prev => ({ ...prev, appData: parsed, isLoading: false }));
+      } catch (e) {
+        localStorage.setItem('mindstream_appData', JSON.stringify(initialData));
+        setState(prev => ({ ...prev, appData: initialData, isLoading: false }));
+      }
+    } else {
+      localStorage.setItem('mindstream_appData', JSON.stringify(initialData));
+      setState(prev => ({ ...prev, appData: initialData, isLoading: false }));
+    }
   }, []);
 
   const login = (username: string, role: string) => {
@@ -127,97 +170,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const logout = () => {
     setState(prev => ({ ...prev, isLoggedIn: false, username: '', role: '' }));
   };
-
-  const getStatusBadge = (status: string) => {
-    let bg = 'var(--bg-surface)';
-    let color = 'var(--text-main)';
-    let border = '1px solid var(--glass-border)';
     
-    if (status === 'To Do') { bg = '#475569'; color = 'white'; border = 'none'; }
-    else if (status === 'In Progress') { bg = '#3b82f6'; color = 'white'; border = 'none'; }
-    else if (status === 'Review') { bg = '#f59e0b'; color = 'white'; border = 'none'; }
-    else if (status === 'Revision') { bg = '#ef4444'; color = 'white'; border = 'none'; }
-    else if (status === 'Retake') { bg = '#dc2626'; color = 'white'; border = 'none'; }
-    else if (status === 'Finalized') { bg = '#10b981'; color = 'white'; border = 'none'; }
-    
-    return `<span style="background: ${bg}; color: ${color}; border: ${border}; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 500;">${status}</span>`;
-  };
-
-  const assignEditor = () => {
-    const allAccounts = state.appData['daftar-akun'] || [];
-    const editors = allAccounts.filter(acc => acc.c9 === 'Editor' || acc.c9?.toLowerCase().includes('editor'));
-    
-    if (editors.length === 0) return 'Belum ada Editor';
-    
-    const videos = state.appData['video-pembelajaran'] || [];
-    const podcasts = state.appData['podcast'] || [];
-    
-    let bestEditor = editors[0].c1;
-    let minLoad = Infinity;
-    
-    editors.forEach(ed => {
-      const eName = ed.c1;
-      const vLoad = videos.filter(v => v.c6?.includes(eName || '') && (v.c8?.includes('To Do') || v.c8?.includes('In Progress'))).length;
-      const pLoad = podcasts.filter(p => p.c6?.includes(eName || '') && (p.c8?.includes('To Do') || p.c8?.includes('In Progress'))).length;
-      const totalLoad = vLoad + pLoad;
-      
-      if (totalLoad < minLoad) {
-        minLoad = totalLoad;
-        bestEditor = eName || '';
-      }
-    });
-    
-    return bestEditor;
-  };
-
-  const processRowData = (pageId: string, row: RowData) => {
-    let processed = { ...row };
-    
-    if (pageId === 'video-pembelajaran') {
-      const editor = assignEditor();
-      processed = {
-        c1: row.c1 || '',
-        c2: `${row.c2_raw || ''}<br><small style="color: var(--text-muted);">${row.c2_mk || ''}</small>`,
-        c3: row.c3_raw ? `<button style="background: var(--bg-surface-hover); border: 1px solid var(--glass-border); color: var(--text-main); padding: 4px 8px; font-size: 0.8rem; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size:1rem;">preview</span> Lihat SB</button>` : '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>',
-        c4: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>',
-        c5: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>',
-        c6: `${editor} (Editor)`,
-        c7: 'Akan Datang',
-        c8: getStatusBadge(row.c8_raw || 'To Do')
-      };
-    } else if (pageId === 'podcast') {
-      const editor = assignEditor();
-      processed = {
-        c1: row.c1 || '',
-        c2: row.c2_raw || '',
-        c3: (row.c3_raw || '').split(',').map(s => s.trim()).join('<br>'),
-        c4: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>',
-        c5: '<span style="color: var(--text-muted); font-style: italic;">Belum ada</span>',
-        c6: `${editor} (Editor)`,
-        c7: 'Akan Datang',
-        c8: getStatusBadge(row.c8_raw || 'To Do')
-      };
-    } else {
-      for (let i = 1; i <= 10; i++) {
-        const key = `c${i}`;
-        if (processed[key] === undefined && row[key]) {
-          processed[key] = row[key];
-        }
-      }
-    }
-    
-    return processed;
-  };
-
   const saveData = (tableName: string, newData: RowData[]) => {
-    const docRef = doc(db, 'mindstream_system', 'global_data');
-    setDoc(docRef, { [tableName]: newData }, { merge: true });
+    setState(prev => {
+      const updatedAppData = { ...prev.appData, [tableName]: newData };
+      localStorage.setItem('mindstream_appData', JSON.stringify(updatedAppData));
+      return { ...prev, appData: updatedAppData };
+    });
   };
 
   const updateRow = (tableName: string, index: number, updatedRow: RowData) => {
     const table = state.appData[tableName] ? [...state.appData[tableName]] : [];
     const oldRow = table[index];
-    let processed = processRowData(tableName, updatedRow);
+    let processed = { ...updatedRow };
     
     // Audit Log System
     const timestamp = new Date().toLocaleString('id-ID');
@@ -230,22 +195,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     processed.auditLog = oldRow && oldRow.auditLog ? `${oldRow.auditLog}|${logEntry}` : logEntry;
     
     table[index] = processed;
-    const docRef = doc(db, 'mindstream_system', 'global_data');
-    setDoc(docRef, { [tableName]: table }, { merge: true });
+    saveData(tableName, table);
   };
 
   const addRow = (tableName: string, newRow: RowData) => {
     const table = state.appData[tableName] ? [...state.appData[tableName]] : [];
-    table.push(processRowData(tableName, newRow));
-    const docRef = doc(db, 'mindstream_system', 'global_data');
-    setDoc(docRef, { [tableName]: table }, { merge: true });
+    table.push({ ...newRow });
+    saveData(tableName, table);
   };
 
   const deleteRow = (tableName: string, index: number) => {
     const table = state.appData[tableName] ? [...state.appData[tableName]] : [];
     table.splice(index, 1);
-    const docRef = doc(db, 'mindstream_system', 'global_data');
-    setDoc(docRef, { [tableName]: table }, { merge: true });
+    saveData(tableName, table);
   };
 
   const showToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {

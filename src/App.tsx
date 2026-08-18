@@ -37,6 +37,7 @@ const App: React.FC = () => {
         <Route path="/" element={<PublicShowcase />} />
         <Route path="/tentang" element={<Tentang />} />
         <Route path="/layanan" element={<Layanan />} />
+        <Route path="/layanan/:slug" element={<Layanan />} />
         <Route path="/titik-temu" element={<TitikTemu />} />
         <Route path="/tim-pipd" element={<TimPIPD />} />
         

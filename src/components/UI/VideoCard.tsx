@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 
 interface VideoCardProps {
@@ -19,11 +19,49 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, lecturer, course, type, da
     return tmp.textContent || tmp.innerText || "";
   };
 
-  const { showToast } = useAppContext();
+  const { state, showToast } = useAppContext();
+  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playTime, setPlayTime] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+
+  // Cek apakah user adalah mahasiswa (role: 'user')
+  const isMahasiswa = state.isLoggedIn && state.role === 'user';
+  
+  // Video Edukasi dibatasi untuk publik, Podcast bebas
+  const isRestricted = type === 'Video Edukasi' && !isMahasiswa;
+
+  useEffect(() => {
+    let interval: any;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setPlayTime((prev) => {
+          const newTime = prev + 1;
+          if (isRestricted && newTime >= 5) {
+            setIsPlaying(false);
+            setIsLocked(true);
+            showToast('Batas waktu preview habis. Silakan Login sebagai Mahasiswa.', 'warning');
+            return 5;
+          }
+          return newTime;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, isRestricted, showToast]);
 
   const handlePlay = () => {
-    // Di masa depan bisa diarahkan ke halaman detail pemutar video
-    showToast(`Membuka pemutar video untuk: ${title}`, 'info');
+    if (isLocked) {
+      showToast('Akses terkunci. Anda harus Login sebagai Mahasiswa untuk menonton video ini secara penuh.', 'error');
+      return;
+    }
+    
+    if (isPlaying) {
+      setIsPlaying(false);
+    } else {
+      setIsPlaying(true);
+      showToast(`Memutar: ${title}`, 'info');
+    }
   };
 
   return (
@@ -33,13 +71,15 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, lecturer, course, type, da
       overflow: 'hidden', 
       borderRadius: '12px',
       transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      cursor: 'pointer',
-      border: '1px solid var(--glass-border)',
+      cursor: isLocked ? 'not-allowed' : 'pointer',
+      border: isLocked ? '1px solid rgba(255,0,0,0.3)' : '1px solid var(--glass-border)',
       background: 'var(--bg-surface)'
     }}
     onMouseEnter={(e) => {
-      e.currentTarget.style.transform = 'translateY(-4px)';
-      e.currentTarget.style.boxShadow = '0 10px 20px rgba(138, 43, 226, 0.15)';
+      if (!isLocked) {
+        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.boxShadow = '0 10px 20px rgba(138, 43, 226, 0.15)';
+      }
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.transform = 'none';
@@ -54,20 +94,40 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, lecturer, course, type, da
         background: 'linear-gradient(45deg, #1f1f23, #2d2d34)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        overflow: 'hidden'
       }}>
-        <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'rgba(255,255,255,0.2)' }}>
-          {type === 'Podcast' ? 'podcasts' : 'play_circle'}
-        </span>
+        {isPlaying ? (
+          <div style={{ position: 'absolute', inset: 0, background: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--primary)', animation: 'pulse 1.5s infinite' }}>
+              graphic_eq
+            </span>
+            <span style={{ color: 'white', marginTop: '8px', fontSize: '0.9rem' }}>00:0{playTime} / {isRestricted ? '00:05' : '45:00'}</span>
+          </div>
+        ) : isLocked ? (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '16px', textAlign: 'center' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: '#ef4444', marginBottom: '8px' }}>
+              lock
+            </span>
+            <span style={{ color: 'white', fontSize: '0.9rem', fontWeight: 600 }}>Akses Dibatasi</span>
+            <span style={{ color: '#aaa', fontSize: '0.75rem', marginTop: '4px' }}>Khusus Mahasiswa UINSSC</span>
+          </div>
+        ) : (
+          <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'rgba(255,255,255,0.2)' }}>
+            {type === 'Podcast' ? 'podcasts' : 'play_circle'}
+          </span>
+        )}
         
-        {/* Play Overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(138, 43, 226, 0.2)', opacity: 0, transition: 'opacity 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-             onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-             onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}>
-           <span className="material-symbols-outlined" style={{ fontSize: '4rem', color: 'white', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))' }}>
-              play_circle
-           </span>
-        </div>
+        {/* Play Overlay (Only show if not playing and not locked) */}
+        {!isPlaying && !isLocked && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(138, 43, 226, 0.2)', opacity: 0, transition: 'opacity 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+               onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+               onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}>
+             <span className="material-symbols-outlined" style={{ fontSize: '4rem', color: 'white', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))' }}>
+                play_circle
+             </span>
+          </div>
+        )}
       </div>
       
       <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>

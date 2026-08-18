@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext, RowData } from '../../context/AppContext';
 import { tableConfigs, pageDataMap } from '../../utils/config';
 import Table from '../UI/Table';
-import FormModal from '../UI/FormModal';
+import DataForm from '../UI/DataForm';
 
 interface GenericPageProps {
   pageId: string;
@@ -13,72 +13,101 @@ const GenericPage: React.FC<GenericPageProps> = ({ pageId }) => {
   const config = tableConfigs[pageId];
   const pageData = pageDataMap[pageId];
   
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingData, setEditingData] = useState<RowData | undefined>();
 
-  const data = state.appData[pageId] || [];
+  useEffect(() => {
+    setIsFormOpen(false);
+    setEditingIndex(null);
+    setEditingData(undefined);
+  }, [pageId]);
+
+  const dbTableName = pageId.includes('video') && !pageId.includes('podcast') ? 'video-pembelajaran' : pageId.includes('podcast') ? 'podcast' : pageId;
+  const data = state.appData[dbTableName] || [];
   
   const canEdit = state.role !== 'user' && !['daftar-admin', 'daftar-uploader', 'daftar-editor', 'daftar-user'].includes(pageId);
+  const isEditorMenu = pageId.startsWith('editor-');
 
   const handleAdd = () => {
     setEditingIndex(null);
     setEditingData(undefined);
-    setIsModalOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleEdit = (index: number) => {
     setEditingIndex(index);
     setEditingData(data[index]);
-    setIsModalOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleDelete = (index: number) => {
     showConfirm('Yakin ingin menghapus data ini?', () => {
-      deleteRow(pageId, index);
+      deleteRow(dbTableName, index);
       showToast('Data berhasil dihapus', 'success');
     });
   };
 
   const handleSubmit = (formData: RowData) => {
     if (editingIndex !== null) {
-      updateRow(pageId, editingIndex, formData);
+      updateRow(dbTableName, editingIndex, formData);
       showToast('Data berhasil diperbarui', 'success');
     } else {
-      addRow(pageId, formData);
+      addRow(dbTableName, formData);
       showToast('Data baru berhasil ditambahkan', 'success');
     }
-    setIsModalOpen(false);
+    setIsFormOpen(false);
   };
 
-  return (
-    <>
-      <div style={{ marginBottom: '16px', fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <a href="#dashboard" style={{ color: 'var(--text-main)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-surface-hover)', border: '1px solid var(--glass-border)', transition: 'all 0.2s ease' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>home</span> Beranda
-        </a> 
-        <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>chevron_right</span>
-        <span style={{ fontWeight: 500, color: 'var(--primary)' }}>{pageData?.label || pageId}</span>
-      </div>
-      
-      {isModalOpen && (
-        <FormModal 
-          pageId={pageId}
-          initialData={editingData}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmit}
-        />
-      )}
-      
-      <div className="glass-card" style={{ padding: '24px', border: 'var(--glass-border)', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-          <h3 style={{ margin: 0 }}>{pageData?.label || pageId}</h3>
-          {canEdit && <button className="btn-primary" onClick={handleAdd} style={{ whiteSpace: 'nowrap' }}>+ Tambah Data</button>}
+  if (isFormOpen) {
+    return (
+      <div className="fade-in">
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
+          <button 
+            onClick={() => setIsFormOpen(false)}
+            style={{ 
+              background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--text-main)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', 
+              borderRadius: '50%', cursor: 'pointer', transition: 'all 0.2s'
+            }}
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700 }}>
+            {editingIndex !== null ? 'Edit Data' : 'Tambah Data'} <span style={{ color: 'var(--primary)' }}>{pageData?.label || pageId}</span>
+          </h1>
         </div>
 
+        <div className="glass-card" style={{ padding: '32px' }}>
+          <DataForm 
+            pageId={pageId} 
+            initialData={editingData} 
+            onSubmit={handleSubmit} 
+            onClose={() => setIsFormOpen(false)} 
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>
+          Kelola <span style={{ color: 'var(--primary)' }}>{pageData?.label || pageId}</span>
+        </h1>
+        {canEdit && !isEditorMenu && (
+          <button className="btn-primary" onClick={handleAdd}>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', marginRight: '8px' }}>add</span>
+            Tambah Data
+          </button>
+        )}
+      </div>
+
+      <div className="glass-card" style={{ padding: '24px' }}>
         {config ? (
           <Table 
-            pageId={pageId} 
+            pageId={pageId}
             data={data} 
             heads={config.heads} 
             canEdit={canEdit}
@@ -86,10 +115,10 @@ const GenericPage: React.FC<GenericPageProps> = ({ pageId }) => {
             onDelete={handleDelete}
           />
         ) : (
-          <div>Belum ada konfigurasi untuk {pageId}</div>
+          <p style={{ color: 'var(--text-muted)' }}>Konfigurasi tabel tidak ditemukan.</p>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

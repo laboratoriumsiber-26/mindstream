@@ -66,10 +66,6 @@ const PublicShowcase: React.FC = () => {
 
   const allContent = [...finalizedVideos, ...finalizedPodcasts].sort((a, b) => b.date.localeCompare(a.date));
 
-  const filteredContent = allContent.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    item.lecturer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <PublicLayout>
@@ -109,35 +105,71 @@ const PublicShowcase: React.FC = () => {
       </div>
 
       {/* Content Section */}
-      <main style={{ padding: '60px 40px', flex: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-          <div>
-            <h3 style={{ fontSize: '2rem', margin: '0 0 8px 0' }}>Katalog Video Inovasi</h3>
-            <p style={{ color: 'var(--text-muted)', margin: 0 }}>Menampilkan karya final dari ekosistem MindStream.</p>
+      <main style={{ padding: '60px 40px', flex: 1, maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+        
+        {/* Section: Video Pembelajaran */}
+        <div style={{ marginBottom: '60px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.8rem', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>smart_display</span> Video Pembelajaran Terbaru</h3>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Materi ajar digital interaktif untuk mahasiswa.</p>
+            </div>
+            <span style={{ color: 'var(--primary)', fontWeight: 'bold', background: 'rgba(188, 48, 95, 0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{finalizedVideos.length} Video</span>
           </div>
-          <span style={{ color: 'var(--primary)', fontWeight: 'bold', background: 'rgba(188, 48, 95, 0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{filteredContent.length} Video Ditemukan</span>
+
+          {finalizedVideos.length > 0 ? (
+            <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', scrollbarWidth: 'thin' }} className="horizontal-scroll">
+              {finalizedVideos.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.lecturer.toLowerCase().includes(searchQuery.toLowerCase())).map((item, idx) => (
+                <div key={idx} style={{ minWidth: '320px', flex: '0 0 auto' }}>
+                  <VideoCard 
+                    title={item.title}
+                    lecturer={item.lecturer}
+                    course={item.course}
+                    date={item.date}
+                    type={item.type}
+                    videoLink={item.videoLink}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px 0', background: 'var(--bg-surface)', borderRadius: '16px', border: '1px dashed var(--glass-border)' }}>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Belum ada Video Pembelajaran yang dirilis.</p>
+            </div>
+          )}
         </div>
 
-        {filteredContent.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-            {filteredContent.map((item, idx) => (
-              <VideoCard 
-                key={idx}
-                title={item.title}
-                lecturer={item.lecturer}
-                course={item.course}
-                date={item.date}
-                type={item.type}
-                videoLink={item.videoLink}
-              />
-            ))}
+        {/* Section: Podcast Inovasi */}
+        <div style={{ marginBottom: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '24px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.8rem', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><span className="material-symbols-outlined" style={{ color: '#f59e0b' }}>mic_external_on</span> Podcast Inovasi Terbaru</h3>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Diskusi inspiratif bersama para pakar.</p>
+            </div>
+            <span style={{ color: '#f59e0b', fontWeight: 'bold', background: 'rgba(245, 158, 11, 0.1)', padding: '6px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{finalizedPodcasts.length} Episode</span>
           </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '4rem', marginBottom: '16px', opacity: 0.5 }}>search_off</span>
-            <p style={{ fontSize: '1.2rem' }}>Tidak ada video yang sesuai dengan kriteria pencarian Anda.</p>
-          </div>
-        )}
+
+          {finalizedPodcasts.length > 0 ? (
+            <div style={{ display: 'flex', gap: '24px', overflowX: 'auto', paddingBottom: '16px', scrollbarWidth: 'thin' }} className="horizontal-scroll">
+              {finalizedPodcasts.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.lecturer.toLowerCase().includes(searchQuery.toLowerCase())).map((item, idx) => (
+                <div key={idx} style={{ minWidth: '320px', flex: '0 0 auto' }}>
+                  <VideoCard 
+                    title={item.title}
+                    lecturer={item.lecturer}
+                    course={item.course}
+                    date={item.date}
+                    type={item.type}
+                    videoLink={item.videoLink}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px 0', background: 'var(--bg-surface)', borderRadius: '16px', border: '1px dashed var(--glass-border)' }}>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>Belum ada Podcast Inovasi yang dirilis.</p>
+            </div>
+          )}
+        </div>
       </main>
     </PublicLayout>
   );

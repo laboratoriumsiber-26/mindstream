@@ -13,14 +13,18 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   const cmsLayanan = state.appData['cms-layanan'] || [];
   const activeLayanan = cmsLayanan.length > 0 ? cmsLayanan.map((l: any) => ({
     name: l.c1 || 'Layanan',
-    link: '/layanan'
+    link: `/layanan/${(l.c1 || 'layanan').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
   })) : [
-    { name: 'Pengembangan Konten Pembelajaran Digital', link: '/layanan' },
-    { name: 'Pelatihan Teknologi Pendidikan', link: '/layanan' },
-    { name: 'Podcast Inovasi', link: '/layanan' },
-    { name: 'OIER (Open Islamic Educational Resources)', link: '/layanan' },
-    { name: 'Virtual Reality', link: '/layanan' }
+    { name: 'Pengembangan Konten Pembelajaran Digital', link: '/layanan/pengembangan-konten' },
+    { name: 'Pelatihan Teknologi Pendidikan', link: '/layanan/pelatihan-teknologi' },
+    { name: 'Podcast Inovasi', link: '/layanan/podcast-inovasi' },
+    { name: 'OIER (Open Islamic Educational Resources)', link: '/layanan/oier' },
+    { name: 'Virtual Reality', link: '/layanan/virtual-reality' }
   ];
+
+  // Extract CMS Menu
+  const cmsMenu = state.appData['cms-menu'] || [];
+  const activeMenus = cmsMenu.filter((m: any) => m.c4 === 'Active' && m.c3?.includes('Header Utama'));
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-main)', display: 'flex', flexDirection: 'column' }}>
@@ -38,21 +42,69 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
         </div>
         
         <nav className="public-nav-links">
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/tentang" className="nav-link">Tentang</Link>
-          
-          {/* Dropdown Our Services */}
-          <div className="nav-dropdown">
-            <span className="nav-link" style={{ display: 'flex', alignItems: 'center' }}>Layanan Kami <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>arrow_drop_down</span></span>
-            <div className="dropdown-menu">
-              {activeLayanan.map((layanan, idx) => (
-                <Link key={idx} to={layanan.link} className="dropdown-item">{layanan.name}</Link>
-              ))}
-            </div>
-          </div>
-          
-          <Link to="/titik-temu" className="nav-link">Titik Temu</Link>
-          <Link to="/tim-pipd" className="nav-link">Tim PIPD</Link>
+          {activeMenus.length > 0 ? (
+            activeMenus.map((menu: any, idx: number) => {
+              if (menu.c3 === 'Header Utama (Dropdown Layanan)') {
+                return (
+                  <div key={idx} className="nav-dropdown">
+                    <span className="nav-link" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      {menu.c1} <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>arrow_drop_down</span>
+                    </span>
+                    <div className="dropdown-menu">
+                      {activeLayanan.map((layanan, lIdx) => (
+                        <Link key={lIdx} to={layanan.link} className="dropdown-item">{layanan.name}</Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Check for Manual Nested Children
+              const children = cmsMenu.filter((m: any) => m.c4 === 'Active' && m.c3 === 'Sub-Menu (Manual Dropdown)' && m.c5 === menu.c1);
+              
+              if (children.length > 0) {
+                return (
+                  <div key={idx} className="nav-dropdown">
+                    <span className="nav-link" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      {menu.c1} <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>arrow_drop_down</span>
+                    </span>
+                    <div className="dropdown-menu">
+                      {children.map((child: any, cIdx: number) => {
+                        const isChildExt = child.c2?.startsWith('http');
+                        if (isChildExt) {
+                          return <a key={cIdx} href={child.c2} target="_blank" rel="noreferrer" className="dropdown-item">{child.c1}</a>;
+                        }
+                        return <Link key={cIdx} to={child.c2 || '#'} className="dropdown-item">{child.c1}</Link>;
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Standard Link
+              const isExternal = menu.c2?.startsWith('http');
+              if (isExternal) {
+                return <a key={idx} href={menu.c2} target="_blank" rel="noreferrer" className="nav-link">{menu.c1}</a>;
+              }
+              return <Link key={idx} to={menu.c2 || '#'} className="nav-link">{menu.c1}</Link>;
+            })
+          ) : (
+            // Fallback if CMS is empty
+            <>
+              <Link to="/" className="nav-link">Home</Link>
+              <Link to="/tentang" className="nav-link">Tentang</Link>
+              <div className="nav-dropdown">
+                <span className="nav-link" style={{ display: 'flex', alignItems: 'center' }}>Layanan Kami <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>arrow_drop_down</span></span>
+                <div className="dropdown-menu">
+                  {activeLayanan.map((layanan, idx) => (
+                    <Link key={idx} to={layanan.link} className="dropdown-item">{layanan.name}</Link>
+                  ))}
+                </div>
+              </div>
+              <Link to="/titik-temu" className="nav-link">Titik Temu</Link>
+              <Link to="/tim-pipd" className="nav-link">Tim PIPD</Link>
+            </>
+          )}
         </nav>
         
         <div className="public-actions">
@@ -61,17 +113,19 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
           <a href="https://uinssc.ac.id/" target="_blank" rel="noreferrer" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 16px', fontSize: '0.85rem' }}>UINSSC</a>
           
           {state.isLoggedIn ? (
-            <Link to="/dashboard" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 16px', fontSize: '0.85rem', marginLeft: '12px', background: 'var(--accent-1)' }}>Dashboard</Link>
+            <Link to="/dashboard" className="btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', marginLeft: '12px', padding: '8px', color: 'var(--primary)' }} title="Masuk ke Panel">
+              <span className="material-symbols-outlined" style={{ fontSize: '1.5rem' }}>admin_panel_settings</span>
+            </Link>
           ) : (
-            <Link to="/login" className="btn-ghost" style={{ textDecoration: 'none', padding: '8px', marginLeft: '8px' }} title="Login Admin">
-              <span className="material-symbols-outlined">login</span>
+            <Link to="/login" className="btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', marginLeft: '8px', padding: '8px', color: 'var(--text-main)' }} title="Login Admin">
+              <span className="material-symbols-outlined" style={{ fontSize: '1.5rem' }}>login</span>
             </Link>
           )}
         </div>
       </header>
 
       {/* Main Content */}
-      <div style={{ flex: 1 }}>
+      <div className="public-layout-wrapper" style={{ flex: 1 }}>
         {children}
       </div>
 

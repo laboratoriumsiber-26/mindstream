@@ -61,7 +61,7 @@ const Login = () => {
     <div className="login-container" style={{ padding: '20px 0' }}>
       <div className="glass-card login-card" style={{ maxWidth: isRegistering ? '500px' : '400px', transition: 'max-width 0.3s ease' }}>
         <div className="logo-placeholder">
-          <span className="material-symbols-outlined icon-large">{isRegistering ? 'how_to_reg' : 'movie_edit'}</span>
+          <span className="material-symbols-outlined icon-large" style={{ fontSize: '4rem', color: 'var(--primary)' }}>{isRegistering ? 'how_to_reg' : 'admin_panel_settings'}</span>
         </div>
         <div className="login-header">
           <h1>{isRegistering ? 'Pengajuan Akun' : 'MediaHub'}</h1>
