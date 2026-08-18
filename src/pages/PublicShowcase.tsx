@@ -64,7 +64,7 @@ const PublicShowcase: React.FC = () => {
       type: 'Podcast' as const
     }));
 
-  const allContent = [...finalizedVideos, ...finalizedPodcasts].sort((a, b) => b.date.localeCompare(a.date));
+
 
 
   return (

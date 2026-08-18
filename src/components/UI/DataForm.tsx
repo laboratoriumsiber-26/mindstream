@@ -245,7 +245,6 @@ const DataForm: React.FC<DataFormProps> = ({ pageId, initialData, onClose, onSub
   };
 
   const renderVideoPembelajaranForm = () => {
-    const editors = state.appData['daftar-akun']?.filter((a: any) => a.c9 === 'Editor' || a.c9 === 'Admin') || [];
     const cmsLayanan = state.appData['cms-layanan'] || [];
     const isRaw = pageId.includes('raw-');
     const isEditor = pageId.includes('editor-');
@@ -313,7 +312,6 @@ const DataForm: React.FC<DataFormProps> = ({ pageId, initialData, onClose, onSub
   };
 
   const renderPodcastForm = () => {
-    const editors = state.appData['daftar-akun']?.filter((a: any) => a.c9 === 'Editor' || a.c9 === 'Admin') || [];
     const cmsLayanan = state.appData['cms-layanan'] || [];
     const isRaw = pageId.includes('raw-');
     const isEditor = pageId.includes('editor-');
